@@ -37,6 +37,18 @@ def is_india(campaign_name: str) -> bool:
     return "india" in (campaign_name or "").lower()
 
 
+def compute_remaining_days(label_budget, label_cost, label_remaining_budget) -> float:
+    # "15 günü sabitleme" hatasını çözmek için kalan gün sayısını dinamik hesaplıyorum:
+    # RemainingDays = (Label budget - Label cost) / Label remaining budget
+    lb = _to_float(label_budget, 0.0)
+    lc = _to_float(label_cost, 0.0)
+    lrb = _to_float(label_remaining_budget, 0.0)
+    if lrb <= 0:
+        return 0.0
+    remaining = max(0.0, lb - lc)
+    return remaining / lrb
+
+
 def allocate_weighted(records: List[Any], total: float) -> Dict[Key, float]:
     # Kampanyalara bütçe dağıtımı yapıyorum.
     # Ağırlık olarak Camp 3D cost kullanıyorum (son 3 gün harcayan yarın da harcar mantığı).
@@ -54,18 +66,13 @@ def allocate_weighted(records: List[Any], total: float) -> Dict[Key, float]:
         # Eğer tüm ağırlıklar 0 ise eşit paylaştırıyorum.
         each = total / n if n else 0.0
         for r in records:
-            name = str(_get(r, "campaign_name", "") or "").strip()
-            plat = str(_get(r, "platform", "") or "").strip()
-            key = (name, plat)
+            key = (_get(r, "campaign_name", ""), _get(r, "platform", "") or "")
             out[key] = each
         return out
 
     # Ağırlıklı oransal dağıtım: budget_i = total * (w_i / sum_w)
     for r, w in zip(records, weights):
-        name = str(_get(r, "campaign_name", "") or "").strip()
-        plat = str(_get(r, "platform", "") or "").strip()
-        key = (name, plat)
-
+        key = (_get(r, "campaign_name", ""), _get(r, "platform", "") or "")
         out[key] = total * (w / s)
     return out
 
@@ -90,37 +97,14 @@ def apply_minimum_and_rebalance(
     # total_daily < 5 * kampanya_sayısı ise hepsine 5 vermek imkansız.
     # Bu durumda en yüksek weight'e sahip kampanyaları aktif bırakıyorum.
     if total_daily < min_value * n:
-        max_active = int(math.floor(total_daily / min_value))
+        max_active = int(math.floor(total_daily / min_value))  # Kaç kampanya minimum 5 alabilir?
         if max_active <= 0:
-            return {k: 0.0 for k in keys}
+            return {k: 0.0 for k in keys}  # bütçe hiç yetmiyorsa hepsi 0
 
-        # En yüksek ağırlıklı kampanyaları aktif seç
+        # weight'e göre sırala, en yüksek max_active kampanya aktif
         sorted_keys = sorted(keys, key=lambda k: weights_by_key.get(k, 0.0), reverse=True)
-        active_keys = sorted_keys[:max_active]
-
-        # Aktiflere en az min_value ver
-        out = {k: 0.0 for k in keys}
-        base_sum = min_value * max_active
-        for k in active_keys:
-            out[k] = min_value
-
-        # Kalan bütçeyi aktifler arasında paylaştır (toplam pacing kaçmasın)
-        leftover = total_daily - base_sum
-        if leftover > 0:
-            active_weights = [max(0.0, weights_by_key.get(k, 0.0)) for k in active_keys]
-            s = sum(active_weights)
-
-            if s <= 0:
-                # Ağırlık yoksa eşit dağıt
-                each = leftover / len(active_keys)
-                for k in active_keys:
-                    out[k] += each
-            else:
-                # Ağırlığa göre dağıt
-                for k, w in zip(active_keys, active_weights):
-                    out[k] += leftover * (w / s)
-
-        return out
+        active = set(sorted_keys[:max_active])
+        return {k: (min_value if k in active else 0.0) for k in keys}
 
     # 2) Clamp (min-5):
     # 5'in altında kalanları fixed grubuna alıp 5'e çekiyorum.
@@ -168,6 +152,11 @@ def compute_new_daily_budgets_for_label(
     india_cap_ratio: float = 0.30,
     min_daily_budget: float = 5.0
 ) -> Dict[Key, float]:
+    # Betül'ün ana fonksiyonu:
+    # 1) TotalDaily = Label remaining budget (pacing)
+    # 2) India kampanyaları toplamı <= %30 cap
+    # 3) Dağıtım: weight = camp_3d_cost
+    # 4) Min 5 kuralı + fizibilite yönetimi
     if not records_for_one_label:
         return {}
 
@@ -176,18 +165,17 @@ def compute_new_daily_budgets_for_label(
     india_cap = india_cap_ratio * total_daily  # India kampanyaları için üst sınır
 
     # Kampanyaları India / Non-India diye ayırıyorum
-    india = [r for r in records_for_one_label if is_india(str(_get(r, "campaign_name", "") or "").strip())]
-    non_india = [r for r in records_for_one_label if not is_india(str(_get(r, "campaign_name", "") or "").strip())]
+    india = [r for r in records_for_one_label if is_india(str(_get(r, "campaign_name", "")))]
+    non_india = [r for r in records_for_one_label if not is_india(str(_get(r, "campaign_name", "")))]
 
     # Rebalance sırasında kullanılacak global weight haritası: (campaign, platform) -> camp_3d_cost
     weights_by_key: Dict[Key, float] = {}
     for r in records_for_one_label:
-        name = str(_get(r, "campaign_name", "") or "").strip()
-        plat = str(_get(r, "platform", "") or "").strip()
-        k = (name, plat)
-
+        k = (str(_get(r, "campaign_name", "")), str(_get(r, "platform", "") or ""))
         weights_by_key[k] = _nonneg(_get(r, "camp_3d_cost", 0.0))
 
+    # --- ÖNEMLİ DÜZELTME:
+    # India cap'i min-5 sonrası bozulmasın diye India ve Non-India için min-5 + rebalance'i AYRI uyguluyorum.
 
     # 1) India havuzu: toplam en fazla india_cap
     india_total = min(india_cap, total_daily)
@@ -226,4 +214,3 @@ def compute_new_daily_budgets_for_label(
 
     # Raporlama için 4 basamak yuvarlıyorum
     return {k: round(v, 4) for k, v in out.items()}
-
