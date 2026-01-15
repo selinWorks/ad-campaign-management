@@ -1,0 +1,93 @@
+/* --- src/components/RecordsTable.module.css --- */
+.wrap{
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(10px);
+}
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom: 12px;
+}
+.title{ font-weight:700; }
+.count{ opacity:0.7; font-size:12px; }
+
+.tableWrap{
+  overflow:auto;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.table{
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 980px;
+}
+th, td{
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  text-align:left;
+  font-size: 13px;
+}
+th{ opacity:0.8; font-weight:600; }
+tr:hover td{ background: rgba(255,255,255,0.03); }
+.mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+.empty{ text-align:center; opacity:0.7; padding: 20px; }
+
+.actionsTh { width: 110px; }
+.actionsTd { white-space: nowrap; }
+
+.actionBtn{
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.06);
+  color: #EAF0FF;
+  cursor: pointer;
+}
+.actionBtn:hover { background: rgba(255,255,255,0.10); }
+
+.right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.select{
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.18);
+  color: #EAF0FF;
+  outline: none;
+}
+
+.pager{
+  margin-top: 12px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+}
+
+.btn{
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.06);
+  color: #EAF0FF;
+  cursor: pointer;
+}
+.btn:disabled{
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pageInfo{
+  opacity: 0.9;
+  font-size: 13px;
+  padding: 0 6px;
+}

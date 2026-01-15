@@ -1,0 +1,23 @@
+.bar{
+  margin-top: 18px;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  justify-content:flex-end;
+}
+.btn{
+  padding:10px 14px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+  color:white;
+  cursor:pointer;
+}
+.btnPrimary{
+  padding:10px 14px;
+  border-radius:12px;
+  border:1px solid rgba(120,180,255,0.25);
+  background: rgba(120,180,255,0.16);
+  color:white;
+  cursor:pointer;
+}

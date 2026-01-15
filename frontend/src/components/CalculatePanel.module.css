@@ -1,0 +1,21 @@
+.card{
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(10px);
+  min-height: 140px;
+}
+.title{ font-weight:700; }
+.sub{ opacity:0.65; font-size:12px; margin-top:6px; }
+.btn{
+  margin-top:18px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(120,180,255,0.25);
+  background: rgba(120,180,255,0.12);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 0 30px rgba(120,180,255,0.10);
+}
