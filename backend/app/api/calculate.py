@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.models.record import Record
 from app.services.calculate.budget import compute_new_daily_budgets_for_label
+from app.services.calculate.tcpa import compute_new_target_cpas_for_label
+
 
 router = APIRouter(prefix="/api/calculate", tags=["calculate"])
 
@@ -30,14 +32,16 @@ def calculate_all(db: Session = Depends(get_db)):
             # Betül'ün fonksiyonu
             new_budgets = compute_new_daily_budgets_for_label(group)
 
+            new_tcpas = compute_new_target_cpas_for_label(group)
+
             for r in group:
-                key = (r.campaign_name, r.platform)
+                key = (r.campaign_name, r.platform or "")
+
                 new_daily = new_budgets.get(key, 0.0)
 
                 r.new_daily_budget = new_daily
 
-                # örnek tcpa kuralı (Hira'nın fonksiyonu ile değişecek)
-                r.new_target_cpa = round(r.camp_cpa * 0.95, 4) if r.camp_cpa else None
+                r.new_target_cpa = new_tcpas.get(key)
 
                 total_updated += 1
 
