@@ -44,18 +44,50 @@ def get_records(db: Session = Depends(get_db)):
 
 
 @router.post("/")
-def create_record(payload: RecordCreate, db: Session = Depends(get_db)):
-    record = Record(**payload.model_dump())
+def create_or_update_record(payload: RecordCreate, db: Session = Depends(get_db)):
+    """
+    Hocanın isterleri için:
+    - Öğretmen yeni kayıt ekleyebilmeli
+    - Aynı label + aynı campaign_name varsa yeni eklemek yerine güncelleyebilmeli
+
+    Bu endpoint UPsert yapar.
+    """
+    data = payload.model_dump()
+
+    existing = (
+        db.query(Record)
+        .filter(Record.label == data["label"], Record.campaign_name == data["campaign_name"])
+        .first()
+    )
+
+    if existing:
+        for k, v in data.items():
+            setattr(existing, k, v)
+
+        try:
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(
+                status_code=409,
+                detail="Update violates unique constraint (same label + campaign_name).",
+            )
+
+        return {"success": True, "created": False, "id": existing.id}
+
+    record = Record(**data)
     db.add(record)
     try:
         db.commit()
+        db.refresh(record)
     except IntegrityError:
         db.rollback()
         raise HTTPException(
             status_code=409,
             detail="Record already exists (same label + campaign_name).",
         )
-    return {"success": True, "id": record.id}
+
+    return {"success": True, "created": True, "id": record.id}
 
 
 @router.patch("/{record_id}")
@@ -77,7 +109,7 @@ def update_record(record_id: int, payload: RecordUpdate, db: Session = Depends(g
             detail="Update violates unique constraint (same label + campaign_name).",
         )
 
-    return {"success": True}
+    return {"success": True, "id": record.id}
 
 
 @router.get("/ping")

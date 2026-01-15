@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Float, UniqueConstraint, JSON
 from app.core.db import Base
 
 
@@ -11,10 +11,9 @@ class Record(Base):
     label = Column(String, nullable=False, index=True)
     campaign_name = Column(String, nullable=False, index=True)
 
-    # Platform Excel'de kolon olarak yok; Campaign name içinden çıkaracağız
     platform = Column(String, nullable=True, index=True)
 
-    # Excel metrikleri (dosyandaki kolonlara göre)
+    # Excel metrikleri
     camp_budget = Column(Float, nullable=True)
     camp_cost = Column(Float, nullable=True)
     camp_3d_cost = Column(Float, nullable=True)
@@ -32,9 +31,13 @@ class Record(Base):
     label_kpi_value = Column(Float, nullable=True)
     label_cpa = Column(Float, nullable=True)
 
-    # Hesaplanacak kolonlar (şimdilik boş, sonra calculate endpoint dolduracak)
+    # Hesaplanan kolonlar (DB field)
     new_daily_budget = Column(Float, nullable=True)
     new_target_cpa = Column(Float, nullable=True)
+
+    # ✅ Orijinal Excel başlık + satır (export için birebir)
+    source_headers = Column(JSON, nullable=True)  # list[str] (sıra önemli)
+    raw_row = Column(JSON, nullable=True)         # dict: {orijinal_header: value}
 
     __table_args__ = (
         UniqueConstraint("label", "campaign_name", name="uq_label_campaign"),

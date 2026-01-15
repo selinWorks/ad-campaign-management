@@ -1,9 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.core.db import Base, engine
-from app.models import record  # noqa: F401 (tablo oluşması için model import)
-
+from app.core.db import init_db
 from app.api.excel import router as excel_router
 from app.api.records import router as records_router
 from app.api.calculate import router as calculate_router
@@ -19,10 +17,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# DB tablolarını oluştur
-Base.metadata.create_all(bind=engine)
+@app.on_event("startup")
+def on_startup():
+    init_db()
 
-# Router'lar
 app.include_router(excel_router)
 app.include_router(records_router)
 app.include_router(calculate_router)

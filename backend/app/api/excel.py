@@ -1,54 +1,43 @@
-print("### LOADED: app/api/excel.py ###")
-print("### HAS UPLOAD ENDPOINT ###")
+from __future__ import annotations
 
-from fastapi import APIRouter, File, UploadFile, HTTPException, Depends
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from sqlalchemy.orm import Session
 
-from app.services.excel.reader import read_excel_bytes, validate_required_columns
-from app.core.db import SessionLocal
+from app.core.db import get_db
 from app.models.record import Record
+from app.services.excel.reader import read_excel_bytes, validate_required_columns
 
 router = APIRouter(prefix="/api/excel", tags=["excel"])
 
-REQUIRED_COLUMNS = [
+REQUIRED_COLS = [
     "Campaign name",
     "Labels on Campaign",
 ]
 
-EXCEL_TO_MODEL = {
-    "Camp. budget": "camp_budget",
-    "Camp. cost": "camp_cost",
-    "Camp. 3D cost": "camp_3d_cost",
-    "Camp. conv.": "camp_conv",
-    "Camp. CPA": "camp_cpa",
-    "Camp. tCPA": "camp_tcpa",
-    "MTD Cluster Spend": "mtd_cluster_spend",
-    "Label budget": "label_budget",
-    "Label cost": "label_cost",
-    "Label 3D cost": "label_3d_cost",
-    "Label conv.": "label_conv",
-    "Label remaining budget": "label_remaining_budget",
-    "Label KPI value": "label_kpi_value",
-    "Label CPA": "label_cpa",
-}
 
-
-def get_db():
-    db = SessionLocal()
+def _to_float(v):
     try:
-        yield db
-    finally:
-        db.close()
+        if v is None:
+            return None
+        if isinstance(v, str):
+            v = v.strip().replace(",", ".")
+            if v == "":
+                return None
+        return float(v)
+    except Exception:
+        return None
 
 
-def detect_platform(campaign_name: str | None) -> str | None:
+def _infer_platform(campaign_name: str | None) -> str | None:
     if not campaign_name:
         return None
-    s = str(campaign_name).lower()
+    s = campaign_name.lower()
     if "android" in s:
         return "Android"
     if "ios" in s:
         return "iOS"
+    if "web" in s:
+        return "Web"
     return None
 
 
@@ -58,33 +47,19 @@ def ping():
 
 
 @router.post("/upload")
-async def upload_excel(file: UploadFile = File(...), db: Session = Depends(get_db)):
-    # 1) Format kontrolü
-    if not file.filename or not file.filename.lower().endswith(".xlsx"):
-        raise HTTPException(status_code=400, detail="Please upload a .xlsx file.")
+async def upload_excel(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    if not file.filename.lower().endswith(".xlsx"):
+        raise HTTPException(status_code=400, detail="Only .xlsx supported")
 
-    # 2) Dosyayı oku
     file_bytes = await file.read()
-    if not file_bytes:
-        raise HTTPException(status_code=400, detail="Empty file.")
+    headers, rows = read_excel_bytes(file_bytes)
 
-    # 3) Excel parse
-    try:
-        headers, rows = read_excel_bytes(file_bytes)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Excel parse error: {e}")
-
-    # 4) Kolon validasyonu
-    missing = validate_required_columns(headers, REQUIRED_COLUMNS)
+    missing = validate_required_columns(headers, REQUIRED_COLS)
     if missing:
-        raise HTTPException(
-            status_code=400,
-            detail={
-                "message": "Missing required columns",
-                "missing": missing,
-                "found_headers": headers,
-            },
-        )
+        raise HTTPException(status_code=422, detail=f"Missing required columns: {missing}")
 
     inserted = 0
     updated = 0
@@ -98,35 +73,43 @@ async def upload_excel(file: UploadFile = File(...), db: Session = Depends(get_d
             skipped += 1
             continue
 
-        campaign_name = str(campaign_name).strip()
-        label = str(label).strip()
-        platform = detect_platform(campaign_name)
-
-        existing = (
+        # Upsert by (label, campaign_name)
+        rec = (
             db.query(Record)
-            .filter(Record.label == label, Record.campaign_name == campaign_name)
+            .filter(Record.label == str(label), Record.campaign_name == str(campaign_name))
             .first()
         )
 
-        if existing:
-            rec = existing
-            updated += 1
-        else:
-            rec = Record(label=label, campaign_name=campaign_name)
-            inserted += 1
-
-        rec.platform = platform
-
-        # Excel -> model alanlarını set et
-        for excel_col, model_field in EXCEL_TO_MODEL.items():
-            val = row.get(excel_col)
-            try:
-                setattr(rec, model_field, float(val) if val is not None else None)
-            except Exception:
-                setattr(rec, model_field, None)
-
-        if not existing:
+        if rec is None:
+            rec = Record(label=str(label), campaign_name=str(campaign_name))
             db.add(rec)
+            inserted += 1
+        else:
+            updated += 1
+
+        # ✅ Orijinal header + orijinal satırı sakla (export birebir için)
+        rec.source_headers = list(headers)
+        rec.raw_row = dict(row)
+
+        # DB field map (calculate için)
+        rec.platform = _infer_platform(str(campaign_name))
+
+        rec.camp_budget = _to_float(row.get("Camp. budget"))
+        rec.camp_cost = _to_float(row.get("Camp. cost"))
+        rec.camp_3d_cost = _to_float(row.get("Camp. 3D cost"))
+        rec.camp_conv = _to_float(row.get("Camp. conv."))
+        rec.camp_cpa = _to_float(row.get("Camp. CPA"))
+        rec.camp_tcpa = _to_float(row.get("Camp. tCPA"))
+
+        rec.mtd_cluster_spend = _to_float(row.get("MTD Cluster Spend"))
+
+        rec.label_budget = _to_float(row.get("Label budget"))
+        rec.label_cost = _to_float(row.get("Label cost"))
+        rec.label_3d_cost = _to_float(row.get("Label 3D cost"))
+        rec.label_conv = _to_float(row.get("Label conv."))
+        rec.label_remaining_budget = _to_float(row.get("Label remaining budget"))
+        rec.label_kpi_value = _to_float(row.get("Label KPI value"))
+        rec.label_cpa = _to_float(row.get("Label CPA"))
 
     db.commit()
 
@@ -142,4 +125,4 @@ async def upload_excel(file: UploadFile = File(...), db: Session = Depends(get_d
 
 @router.get("/debug_routes")
 def debug_routes():
-    return [f"{r.methods} {r.path}" for r in router.routes]
+    return {"ok": True, "msg": "debug_routes works"}

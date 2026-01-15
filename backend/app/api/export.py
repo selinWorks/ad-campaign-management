@@ -25,7 +25,5 @@ def export_excel(db: Session = Depends(get_db)):
     return StreamingResponse(
         excel_file,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={
-            "Content-Disposition": "attachment; filename=calculated_results.xlsx"
-        },
+        headers={"Content-Disposition": "attachment; filename=calculated_results.xlsx"},
     )
