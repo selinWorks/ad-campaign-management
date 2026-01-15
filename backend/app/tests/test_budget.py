@@ -1,11 +1,8 @@
 from app.services.calculate.budget import compute_new_daily_budgets_for_label
-# Günlük bütçe hesaplama fonksiyonunu test etmek için import ediyorum.
 
 
 class R:
     def __init__(self, label, campaign_name, platform, label_remaining_budget, camp_3d_cost):
-        # Test sırasında kullanmak için basit bir kampanya nesnesi tanımlıyorum.
-        # Gerçek uygulamada bu nesne Excel satırı veya veritabanı kaydı olacaktır.
         self.label = label
         self.campaign_name = campaign_name
         self.platform = platform
@@ -13,40 +10,32 @@ class R:
         self.camp_3d_cost = camp_3d_cost
 
 
-def test_india_cap_and_min5():
-    # Bu testte iki temel durumu kontrol ediyorum:
-    # - India kampanyalarına ayrılan bütçe toplamının sınırı aşmaması
-    # - Kampanyalara verilen günlük bütçelerin minimum değerin altına düşmemesi
-
+def run_india_cap_scenario():
+    # India + Non-India karışık senaryo (TotalDaily=100)
     rows = [
-        # Aynı label altında India ve India olmayan kampanyalar oluşturuyorum
         R("L1", "AAA India", "Android", 100, 30),
         R("L1", "BBB India", "iOS",     100, 10),
         R("L1", "CCC TR",    "Android", 100, 40),
         R("L1", "DDD TR",    "iOS",     100, 20),
     ]
 
-    # Günlük bütçe hesaplama fonksiyonunu çalıştırıyorum
     out = compute_new_daily_budgets_for_label(rows)
+    print("OUTPUT-INDIA:", out)
 
-    # India kampanyalarına verilen bütçeleri toplayarak kontrol ediyorum
+    # India kampanyalarına giden toplamın 30'u geçmediğini kontrol ediyorum
     india_sum = out[("AAA India", "Android")] + out[("BBB India", "iOS")]
+    assert india_sum <= 30.0001, f"India toplam cap'i aştı: {india_sum}"
 
-    # Günlük toplam bütçe 100 olduğu için India tarafının 30'u geçmemesi gerekiyor
-    assert india_sum <= 30.0001
+    # Minimum değer kontrolü: her değer ya 5 ve üstü olmalı ya da 0 olmalı
+    assert all(v >= 5 or abs(v) < 1e-9 for v in out.values()), f"Min kuralı bozuldu: {out}"
 
-    # Kampanyaların aldığı bütçeler:
-    # ya minimum değerin üzerinde olmalı
-    # ya da bütçe yetmediği durumda 0 olmalı
-    assert all(v >= 5 or v == 0 for v in out.values())
+    # Toplam dağıtım pacing ile uyumlu mu? (TotalDaily=100)
+    assert abs(sum(out.values()) - 100.0) < 1e-3, f"Toplam mismatch: {sum(out.values())}"
 
 
-def test_feasibility_active_selection():
-    # Bu testte toplam bütçenin yetersiz olduğu bir durumu simüle ediyorum.
-    # Toplam bütçe 12 ve kampanya sayısı 5 olduğu için herkese minimum değer verilemez.
-
+def run_low_budget_scenario():
+    # Bütçenin yetmediği senaryo (TotalDaily=12, 5 kampanya)
     rows = [
-        # Harcama ağırlıkları farklı olan 5 kampanya tanımlıyorum
         R("L1", "A", "", 12, 100),
         R("L1", "B", "", 12, 90),
         R("L1", "C", "", 12, 10),
@@ -54,12 +43,19 @@ def test_feasibility_active_selection():
         R("L1", "E", "", 12, 1),
     ]
 
-    # Günlük bütçe hesaplama fonksiyonunu çalıştırıyorum
     out = compute_new_daily_budgets_for_label(rows)
+    print("OUTPUT-LOW:", out)
 
-    # Minimum bütçeyi alan kampanya sayısını sayıyorum
-    active = sum(1 for v in out.values() if v == 5)
+    # En az 5 alan kampanya sayısı 2 olmalı (floor(12/5)=2)
+    active = sum(1 for v in out.values() if v >= 5)
+    assert active == 2, f"Aktif sayısı beklenenden farklı: {active}"
 
-    # 12 / 5 = 2 olduğu için sadece 2 kampanya aktif kalmalı
-    # Diğer kampanyalar bütçe alamamalı
-    assert active == 2
+    # Toplam bütçe boşa gitmesin: toplam 12 olmalı
+    assert abs(sum(out.values()) - 12.0) < 1e-6, f"Toplam mismatch: {sum(out.values())}"
+
+
+if __name__ == "__main__":
+    # Dosyayı direkt Run ettiğinde iki senaryoyu da test eder.
+    run_india_cap_scenario()
+    run_low_budget_scenario()
+    print("ALL TESTS PASSED")
