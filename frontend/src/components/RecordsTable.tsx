@@ -82,18 +82,13 @@ export default function RecordsTable({ rows, onEdit, onDelete }: Props) {
                 <td>{fmt(r.new_target_cpa)}</td>
 
                 <td className={styles.actions}>
-  <button className={styles.iconBtn} onClick={() => onEdit(r)} title="Düzenle" aria-label="Düzenle">
-    <span className={styles.icon} aria-hidden>✏️</span>
-  </button>
+  <button className={styles.iconBtn} onClick={() => onEdit(r)} title="Düzenle">
+  <span className={styles.icon}>✏️</span>
+</button>
 
-  <button
-    className={`${styles.iconBtn} ${styles.danger}`}
-    onClick={() => onDelete(r)}
-    title="Sil"
-    aria-label="Sil"
-  >
-    <span className={styles.icon} aria-hidden>🗑️</span>
-  </button>
+  <button className={`${styles.iconBtn} ${styles.danger}`} onClick={() => onDelete(r)} title="Sil">
+  <span className={styles.icon}>🗑️</span>
+</button>
 </td>
               </tr>
             ))}
@@ -147,52 +142,5 @@ function fmt(v: number | null | undefined) {
   return n.toFixed(4).replace(/\.?0+$/, "");
 }
 
-function PencilIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 20h9"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
-function TrashIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M3 6h18"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M8 6V4h8v2"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M19 6l-1 14H6L5 6"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M10 11v6M14 11v6"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
+
