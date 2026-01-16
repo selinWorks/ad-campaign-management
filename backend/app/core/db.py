@@ -16,6 +16,9 @@ connect_args = {}
 if DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 
+print("DATABASE_URL(raw) =", repr(DATABASE_URL))
+print("DB DIALECT =", DATABASE_URL.split(":", 1)[0])
+
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
