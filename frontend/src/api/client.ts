@@ -1,26 +1,36 @@
 // --- src/api/client.ts ---
 import axios from "axios";
-import { fetchRecords, runCalculate, createOrUpdateRecord, patchRecord, deleteRecord } from "./endpoints";
 import type { RecordItem } from "../types/record";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+import {
+  fetchRecords,
+  runCalculate,
+  createOrUpdateRecord,
+  patchRecord,
+  deleteRecord,
+} from "./endpoints";
+
+// Render backend base url (ör: https://ad-campaign-management.onrender.com)
+// Eğer yoksa boş kalır ve baseURL "/api" olur (local/proxy için)
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 export const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: BASE_URL + "/api",
   timeout: 30000,
 });
 
 // DashboardPage uyumlu helper'lar
 export async function apiGetRecords() {
-  const res = await fetchRecords();
-  return res.data;
+  return fetchRecords();
 }
 
 export async function apiCalculate() {
   return runCalculate();
 }
 
-export async function apiCreateRecord(payload: { label: string; campaign_name: string } & Partial<RecordItem>) {
+export async function apiCreateRecord(
+  payload: { label: string; campaign_name: string } & Partial<RecordItem>
+) {
   return createOrUpdateRecord(payload);
 }
 
