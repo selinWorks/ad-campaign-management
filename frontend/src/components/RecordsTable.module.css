@@ -1,10 +1,12 @@
+/* --- src/components/RecordsTable.module.css --- */
 .wrap{
   margin-top: 18px;
   padding: 18px;
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.03);
-  backdrop-filter: blur(10px);
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.09);
+  background: rgba(255,255,255,0.035);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 16px 50px rgba(0,0,0,0.35);
 }
 
 .header{
@@ -16,7 +18,8 @@
 }
 
 .title{
-  font-weight:700;
+  font-weight:800;
+  letter-spacing: 0.2px;
 }
 
 .right{
@@ -26,47 +29,58 @@
 }
 
 .count{
-  opacity:0.7;
+  opacity:0.75;
   font-size:12px;
   white-space: nowrap;
 }
 
 .select{
   padding: 8px 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(0,0,0,0.18);
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.22);
   color: #EAF0FF;
   outline: none;
 }
 
 .tableWrap{
   overflow:auto;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.09);
+  background: rgba(0,0,0,0.12);
 }
 
 .table{
   width: 100%;
   border-collapse: collapse;
-  min-width: 980px; /* Actions kolonuyla birlikte */
+  min-width: 980px;
 }
 
 th, td{
-  padding: 10px 12px;
+  padding: 11px 12px;
   border-bottom: 1px solid rgba(255,255,255,0.06);
   text-align:left;
   font-size: 13px;
   vertical-align: middle;
 }
 
-th{
-  opacity:0.8;
-  font-weight:600;
+thead th{
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: rgba(10,12,22,0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+  opacity: 0.95;
+  font-weight: 700;
 }
 
-tr:hover td{
-  background: rgba(255,255,255,0.03);
+tbody tr:nth-child(2n) td{
+  background: rgba(255,255,255,0.015);
+}
+
+tbody tr:hover td{
+  background: rgba(255,255,255,0.04);
 }
 
 .mono{
@@ -75,12 +89,12 @@ tr:hover td{
 
 .empty{
   text-align:center;
-  opacity:0.7;
-  padding: 20px;
+  opacity:0.75;
+  padding: 22px;
 }
 
 .actions{
-  width: 190px;
+  width: 200px;
   white-space: nowrap;
 }
 
@@ -88,31 +102,37 @@ tr:hover td{
   margin-right: 8px;
 }
 
-.btnDanger{
-  border: 1px solid rgba(255,80,80,0.35);
-  background: rgba(255,80,80,0.10);
-}
-
-.btnDanger:hover{
-  background: rgba(255,80,80,0.16);
-}
-
 .btn{
   padding: 8px 10px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.12);
   background: rgba(255,255,255,0.06);
   color: #EAF0FF;
   cursor: pointer;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
 }
 
 .btn:hover{
   background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.18);
+}
+
+.btn:active{
+  transform: translateY(1px);
 }
 
 .btn:disabled{
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.btnDanger{
+  border: 1px solid rgba(255,80,80,0.36);
+  background: rgba(255,80,80,0.10);
+}
+
+.btnDanger:hover{
+  background: rgba(255,80,80,0.16);
 }
 
 .pager{
@@ -125,8 +145,125 @@ tr:hover td{
 }
 
 .pageInfo{
-  opacity: 0.9;
+  opacity: 0.92;
   font-size: 13px;
   padding: 0 6px;
   white-space: nowrap;
+}
+
+.actions{
+  width: 210px;
+  white-space: nowrap;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.iconBtn{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 8px 10px;
+  border-radius: 999px;
+
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: #EAF0FF;
+
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.iconBtn:hover{
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.18);
+  box-shadow: 0 0 0 4px rgba(120,180,255,0.08);
+}
+
+.iconBtn:active{
+  transform: translateY(1px);
+}
+
+.iconBtn svg{
+  opacity: 0.95;
+}
+
+.iconBtnText{
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.iconBtnDanger{
+  border: 1px solid rgba(255,80,80,0.30);
+  background: rgba(255,80,80,0.10);
+}
+
+.iconBtnDanger:hover{
+  background: rgba(255,80,80,0.16);
+  border-color: rgba(255,80,80,0.45);
+  box-shadow: 0 0 0 4px rgba(255,80,80,0.10);
+}
+
+/* Mobilde yazıyı gizleyip sadece ikon bırakmak istersen */
+@media (max-width: 720px){
+  .iconBtnText{ display:none; }
+  .actions{ width: 120px; }
+}
+
+.actions{
+  width: 120px;
+  white-space: nowrap;
+}
+
+.iconBtn{
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.05);
+  color: #EAF0FF;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+
+  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.iconBtn:hover{
+  background: rgba(255,255,255,0.09);
+  border-color: rgba(120,180,255,0.28);
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 1px rgba(120,180,255,0.10), 0 10px 30px rgba(0,0,0,0.35);
+}
+
+.iconBtn:active{
+  transform: translateY(0px) scale(0.98);
+}
+
+.icon{
+  font-size: 16px;
+  filter: drop-shadow(0 6px 16px rgba(120,180,255,0.18));
+}
+
+.danger{
+  border-color: rgba(255,80,80,0.22);
+  background: rgba(255,80,80,0.06);
+}
+
+.danger:hover{
+  border-color: rgba(255,80,80,0.38);
+  background: rgba(255,80,80,0.10);
+  box-shadow: 0 0 0 1px rgba(255,80,80,0.10), 0 10px 30px rgba(0,0,0,0.35);
+}
+
+/* Bonus: action butonlarını sadece hover’da belirginleştir */
+.table tbody tr .actions .iconBtn{
+  opacity: 0.78;
+}
+.table tbody tr:hover .actions .iconBtn{
+  opacity: 1;
 }

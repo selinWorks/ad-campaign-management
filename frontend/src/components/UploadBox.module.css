@@ -1,10 +1,38 @@
 .card{
+  position: relative;
   padding: 18px;
   border-radius: 18px;
   border: 1px solid rgba(255,255,255,0.08);
   background: rgba(255,255,255,0.04);
   backdrop-filter: blur(10px);
   min-height: 140px;
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease, background 200ms ease;
+  overflow: hidden;
+}
+.card::before{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  border-radius: 18px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(120,180,255,0.35), rgba(160,120,255,0.18), rgba(255,255,255,0.06));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 200ms ease;
+  pointer-events:none;
+}
+
+.card:hover{
+  transform: translateY(-2px);
+  border-color: rgba(120,180,255,0.18);
+  background: rgba(255,255,255,0.05);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+}
+
+.card:hover::before{
+  opacity: 1;
 }
 .header{
   display:flex;
@@ -22,5 +50,73 @@
   color:white;
   cursor:pointer;
 }
-.btn:disabled{ opacity:0.55; cursor:not-allowed; }
+.btn{
+  padding: 11px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.14);
+  color: #EAF0FF;
+  cursor: pointer;
+  font-weight: 700;
+  letter-spacing: .2px;
+
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,0.06),
+    rgba(120,180,255,0.10)
+  );
+
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 14px 40px rgba(120,180,255,0.08);
+
+  position: relative;
+  overflow: hidden;
+
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, filter .18s ease;
+}
+
+.btn:hover{
+  transform: translateY(-2px);
+  border-color: rgba(120,180,255,0.40);
+
+  box-shadow:
+    0 0 0 1px rgba(120,180,255,0.10),
+    0 0 24px rgba(120,180,255,0.14),
+    0 0 60px rgba(160,120,255,0.08);
+}
+
+.btn:active{
+  transform: translateY(0px) scale(0.99);
+  filter: brightness(1.05);
+}
+
+/* Shimmer */
+.btn::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255,255,255,0.08) 35%,
+    rgba(255,255,255,0.20) 50%,
+    rgba(255,255,255,0.08) 65%,
+    transparent 100%
+  );
+  transform: translateX(-120%);
+  transition: transform .6s ease;
+  pointer-events:none;
+}
+
+.btn:hover::before{
+  transform: translateX(120%);
+}
+
+/* Disabled */
+.btn:disabled{
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
 .msg{ margin-top:14px; opacity:0.9; font-size:13px; }

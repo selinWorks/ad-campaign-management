@@ -1,25 +1,9 @@
 .bar{
-  margin-top: 18px;
   display:flex;
-  gap:12px;
   align-items:center;
-  justify-content:flex-end;
-}
-.btn{
-  padding:10px 14px;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.06);
-  color:white;
-  cursor:pointer;
-}
-.btnPrimary{
-  padding:10px 14px;
-  border-radius:12px;
-  border:1px solid rgba(120,180,255,0.25);
-  background: rgba(120,180,255,0.16);
-  color:white;
-  cursor:pointer;
+  justify-content:space-between;
+  gap:12px;
+  margin-top: 12px;
 }
 
 .left{
@@ -31,14 +15,92 @@
 .right{
   display:flex;
   align-items:center;
-  gap:10px;
+  gap:12px;
   justify-content:flex-end;
 }
 
-.bar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  margin-top: 12px;
+/* ====== BUTON BASE ====== */
+.btn, .btnPrimary{
+  position: relative;
+  padding: 11px 16px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-weight: 650;
+  letter-spacing: 0.2px;
+
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: #EAF0FF;
+
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+  overflow: hidden;
+}
+
+/* hover glow */
+.btn:hover{
+  transform: translateY(-1px) scale(1.03);
+  border-color: rgba(255,255,255,0.20);
+  background: rgba(255,255,255,0.10);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.05),
+    0 14px 40px rgba(0,0,0,0.35);
+}
+
+/* click press */
+.btn:active{
+  transform: translateY(0px) scale(0.99);
+}
+
+/* ====== PRIMARY BUTON (NEON) ====== */
+.btnPrimary{
+  border: 1px solid rgba(120,180,255,0.28);
+  background: linear-gradient(135deg, rgba(120,180,255,0.22), rgba(160,120,255,0.18));
+  box-shadow:
+    0 0 0 1px rgba(120,180,255,0.06),
+    0 20px 60px rgba(120,180,255,0.10);
+}
+
+/* primary hover: daha parlak + glow */
+.btnPrimary:hover{
+  transform: translateY(-1px) scale(1.04);
+  border-color: rgba(120,180,255,0.45);
+  box-shadow:
+    0 0 0 1px rgba(120,180,255,0.10),
+    0 0 35px rgba(120,180,255,0.18),
+    0 0 70px rgba(160,120,255,0.10);
+}
+
+/* shimmer animasyon */
+.btnPrimary::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255,255,255,0.10) 35%,
+    rgba(255,255,255,0.25) 50%,
+    rgba(255,255,255,0.10) 65%,
+    transparent 100%
+  );
+  transform: translateX(-120%);
+  transition: transform .55s ease;
+  pointer-events:none;
+}
+
+.btnPrimary:hover::before{
+  transform: translateX(120%);
+}
+
+/* küçük parıltı noktası */
+.btnPrimary::after{
+  content:"";
+  position:absolute;
+  width: 120px;
+  height: 120px;
+  right: -60px;
+  top: -60px;
+  background: radial-gradient(circle, rgba(120,180,255,0.22), transparent 60%);
+  opacity: 0.8;
+  pointer-events:none;
 }

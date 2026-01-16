@@ -1,3 +1,4 @@
+// --- src/components/RecordsTable.tsx ---
 import { useMemo, useState } from "react";
 import type { RecordRow } from "../types/record";
 import styles from "./RecordsTable.module.css";
@@ -12,12 +13,7 @@ export default function RecordsTable({ rows, onEdit, onDelete }: Props) {
   const [pageSize, setPageSize] = useState<number>(15);
   const [page, setPage] = useState<number>(1);
 
-  // rows değişince sayfa dışarı taşmasın
   const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
-  if (page > totalPages) {
-    // render sırasında setState yapmak istemeyiz; bu yüzden memo ile güvenli çözüm:
-    // aşağıdaki clampPage useMemo içinde ele alınıyor
-  }
 
   const { pageRows, clampPage } = useMemo(() => {
     const tp = Math.max(1, Math.ceil(rows.length / pageSize));
@@ -27,11 +23,7 @@ export default function RecordsTable({ rows, onEdit, onDelete }: Props) {
     return { pageRows: rows.slice(start, end), clampPage: cp };
   }, [rows, pageSize, page]);
 
-  // clampPage ile gerçek sayfayı sync edelim (sayfa küçülünce)
   if (clampPage !== page) {
-    // eslint-disable-next-line react/no-direct-mutation-state
-    // React'ta doğrudan mutation yok; setPage yapıyoruz.
-    // Bu küçük sync için yeterli.
     setTimeout(() => setPage(clampPage), 0);
   }
 
@@ -88,17 +80,21 @@ export default function RecordsTable({ rows, onEdit, onDelete }: Props) {
                 <td>{fmt(r.camp_cpa)}</td>
                 <td>{fmt(r.new_daily_budget)}</td>
                 <td>{fmt(r.new_target_cpa)}</td>
+
                 <td className={styles.actions}>
-                  <button className={styles.btn} onClick={() => onEdit(r)}>
-                    Düzenle
-                  </button>
-                  <button
-                      className={`${styles.btn} ${styles.btnDanger}`}
-                      onClick={() => onDelete(r)}
-                  >
-                      Sil
-                  </button>
-                </td>
+  <button className={styles.iconBtn} onClick={() => onEdit(r)} title="Düzenle" aria-label="Düzenle">
+    <span className={styles.icon} aria-hidden>✏️</span>
+  </button>
+
+  <button
+    className={`${styles.iconBtn} ${styles.danger}`}
+    onClick={() => onDelete(r)}
+    title="Sil"
+    aria-label="Sil"
+  >
+    <span className={styles.icon} aria-hidden>🗑️</span>
+  </button>
+</td>
               </tr>
             ))}
 
@@ -114,14 +110,9 @@ export default function RecordsTable({ rows, onEdit, onDelete }: Props) {
       </div>
 
       <div className={styles.pager}>
-        <button
-          className={styles.btn}
-          disabled={clampPage <= 1}
-          onClick={() => setPage(1)}
-        >
+        <button className={styles.btn} disabled={clampPage <= 1} onClick={() => setPage(1)}>
           {"<<"}
         </button>
-
         <button
           className={styles.btn}
           disabled={clampPage <= 1}
@@ -141,12 +132,7 @@ export default function RecordsTable({ rows, onEdit, onDelete }: Props) {
         >
           {">"}
         </button>
-
-        <button
-          className={styles.btn}
-          disabled={clampPage >= totalPages}
-          onClick={() => setPage(totalPages)}
-        >
+        <button className={styles.btn} disabled={clampPage >= totalPages} onClick={() => setPage(totalPages)}>
           {">>"}
         </button>
       </div>
@@ -159,4 +145,54 @@ function fmt(v: number | null | undefined) {
   const n = Number(v);
   if (Number.isNaN(n)) return "-";
   return n.toFixed(4).replace(/\.?0+$/, "");
+}
+
+function PencilIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M12 20h9"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M3 6h18"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M8 6V4h8v2"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M19 6l-1 14H6L5 6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M10 11v6M14 11v6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
 }
