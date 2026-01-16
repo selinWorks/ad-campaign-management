@@ -3,9 +3,10 @@ import axios from "axios";
 import { fetchRecords, runCalculate, createOrUpdateRecord, patchRecord, deleteRecord } from "./endpoints";
 import type { RecordItem } from "../types/record";
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
 export const api = axios.create({
-  baseURL: "/api", // vite proxy -> http://127.0.0.1:9100
+  baseURL: BASE_URL,
   timeout: 30000,
 });
 
