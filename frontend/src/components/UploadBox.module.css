@@ -120,3 +120,27 @@
   box-shadow: none;
 }
 .msg{ margin-top:14px; opacity:0.9; font-size:13px; }
+
+.loader{
+  margin-top: 12px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+  position: relative;
+}
+
+.loader::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  width: 40%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(120,180,255,0.0), rgba(120,180,255,0.65), rgba(160,120,255,0.0));
+  animation: slide 1.1s ease-in-out infinite;
+}
+
+@keyframes slide{
+  0%{ transform: translateX(-60%); }
+  100%{ transform: translateX(220%); }
+}
