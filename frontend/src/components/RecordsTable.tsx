@@ -1,28 +1,47 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import type { RecordRow } from "../types/record";
 import styles from "./RecordsTable.module.css";
 
-export default function RecordsTable({ rows }: { rows: RecordRow[] }) {
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(15);
+type Props = {
+  rows: RecordRow[];
+  onEdit: (row: RecordRow) => void;
+};
 
+export default function RecordsTable({ rows, onEdit }: Props) {
+  const [pageSize, setPageSize] = useState<number>(15);
+  const [page, setPage] = useState<number>(1);
+
+  // rows değişince sayfa dışarı taşmasın
   const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  if (page > totalPages) {
+    // render sırasında setState yapmak istemeyiz; bu yüzden memo ile güvenli çözüm:
+    // aşağıdaki clampPage useMemo içinde ele alınıyor
+  }
 
-  // rows değişince sayfa taşmasın
-  useEffect(() => {
-    if (page > totalPages) setPage(totalPages);
-  }, [rows.length, page, totalPages]);
-
-  const pagedRows = useMemo(() => {
-    const start = (page - 1) * pageSize;
+  const { pageRows, clampPage } = useMemo(() => {
+    const tp = Math.max(1, Math.ceil(rows.length / pageSize));
+    const cp = Math.min(Math.max(1, page), tp);
+    const start = (cp - 1) * pageSize;
     const end = start + pageSize;
-    return rows.slice(start, end);
-  }, [rows, page, pageSize]);
+    return { pageRows: rows.slice(start, end), clampPage: cp };
+  }, [rows, pageSize, page]);
+
+  // clampPage ile gerçek sayfayı sync edelim (sayfa küçülünce)
+  if (clampPage !== page) {
+    // eslint-disable-next-line react/no-direct-mutation-state
+    // React'ta doğrudan mutation yok; setPage yapıyoruz.
+    // Bu küçük sync için yeterli.
+    setTimeout(() => setPage(clampPage), 0);
+  }
+
+  const from = rows.length === 0 ? 0 : (clampPage - 1) * pageSize + 1;
+  const to = rows.length === 0 ? 0 : Math.min(clampPage * pageSize, rows.length);
 
   return (
     <div className={styles.wrap}>
       <div className={styles.header}>
         <div className={styles.title}>Records</div>
+
         <div className={styles.right}>
           <div className={styles.count}>{rows.length} rows</div>
 
@@ -30,7 +49,8 @@ export default function RecordsTable({ rows }: { rows: RecordRow[] }) {
             className={styles.select}
             value={pageSize}
             onChange={(e) => {
-              setPageSize(Number(e.target.value));
+              const next = Number(e.target.value);
+              setPageSize(next);
               setPage(1);
             }}
           >
@@ -53,10 +73,12 @@ export default function RecordsTable({ rows }: { rows: RecordRow[] }) {
               <th>Camp CPA</th>
               <th>New Daily Budget</th>
               <th>New Target CPA</th>
+              <th>Actions</th>
             </tr>
           </thead>
+
           <tbody>
-            {pagedRows.map((r) => (
+            {pageRows.map((r) => (
               <tr key={r.id}>
                 <td>{r.label}</td>
                 <td className={styles.mono}>{r.campaign_name}</td>
@@ -65,12 +87,17 @@ export default function RecordsTable({ rows }: { rows: RecordRow[] }) {
                 <td>{fmt(r.camp_cpa)}</td>
                 <td>{fmt(r.new_daily_budget)}</td>
                 <td>{fmt(r.new_target_cpa)}</td>
+                <td className={styles.actions}>
+                  <button className={styles.btn} onClick={() => onEdit(r)}>
+                    Düzenle
+                  </button>
+                </td>
               </tr>
             ))}
 
-            {rows.length === 0 && (
+            {pageRows.length === 0 && (
               <tr>
-                <td colSpan={7} className={styles.empty}>
+                <td colSpan={8} className={styles.empty}>
                   Henüz veri yok. Excel yükleyin.
                 </td>
               </tr>
@@ -79,48 +106,50 @@ export default function RecordsTable({ rows }: { rows: RecordRow[] }) {
         </table>
       </div>
 
-      {rows.length > 0 && (
-        <div className={styles.pager}>
-          <button
-            className={styles.btn}
-            onClick={() => setPage(1)}
-            disabled={page === 1}
-          >
-            {"<<"}
-          </button>
-          <button
-            className={styles.btn}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-          >
-            {"<"}
-          </button>
+      <div className={styles.pager}>
+        <button
+          className={styles.btn}
+          disabled={clampPage <= 1}
+          onClick={() => setPage(1)}
+        >
+          {"<<"}
+        </button>
 
-          <div className={styles.pageInfo}>
-            Sayfa <b>{page}</b> / {totalPages}
-          </div>
+        <button
+          className={styles.btn}
+          disabled={clampPage <= 1}
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+        >
+          {"<"}
+        </button>
 
-          <button
-            className={styles.btn}
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page === totalPages}
-          >
-            {">"}
-          </button>
-          <button
-            className={styles.btn}
-            onClick={() => setPage(totalPages)}
-            disabled={page === totalPages}
-          >
-            {">>"}
-          </button>
+        <div className={styles.pageInfo}>
+          {from}-{to} / {rows.length} • Sayfa {clampPage} / {totalPages}
         </div>
-      )}
+
+        <button
+          className={styles.btn}
+          disabled={clampPage >= totalPages}
+          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+        >
+          {">"}
+        </button>
+
+        <button
+          className={styles.btn}
+          disabled={clampPage >= totalPages}
+          onClick={() => setPage(totalPages)}
+        >
+          {">>"}
+        </button>
+      </div>
     </div>
   );
 }
 
 function fmt(v: number | null | undefined) {
   if (v === null || v === undefined) return "-";
-  return Number(v).toFixed(4).replace(/\.?0+$/, "");
+  const n = Number(v);
+  if (Number.isNaN(n)) return "-";
+  return n.toFixed(4).replace(/\.?0+$/, "");
 }

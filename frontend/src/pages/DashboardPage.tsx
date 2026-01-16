@@ -1,5 +1,5 @@
 // --- src/pages/DashboardPage.tsx ---
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import UploadBox from "../components/UploadBox";
 import CalculatePanel from "../components/CalculatePanel";
@@ -7,7 +7,7 @@ import RecordsTable from "../components/RecordsTable";
 import Toolbar from "../components/Toolbar";
 import RecordModal from "../components/RecordModal";
 
-import type { RecordRow, RecordItem } from "../types/record";
+import type { RecordRow } from "../types/record";
 import { apiCalculate, apiGetRecords, apiCreateRecord, apiPatchRecord } from "../api/client";
 
 export default function DashboardPage() {
@@ -18,7 +18,7 @@ export default function DashboardPage() {
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
-  const [editing, setEditing] = useState<RecordItem | null>(null);
+  const [editing, setEditing] = useState<RecordRow | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -67,13 +67,11 @@ export default function DashboardPage() {
     setError(null);
     try {
       if (modalMode === "create") {
-        // create: label + campaign_name zorunlu
         await apiCreateRecord(payload);
       } else {
-        // edit: backend PATCH id ister
-        const id = payload.id;
+        const id = Number(payload.id);
         const { id: _id, ...patch } = payload;
-        await apiPatchRecord(Number(id), patch);
+        await apiPatchRecord(id, patch);
       }
       await refresh();
     } catch (e: any) {
@@ -82,16 +80,6 @@ export default function DashboardPage() {
       setLoading(false);
     }
   }
-
-  const topActions = useMemo(() => {
-    return (
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 12 }}>
-        <button className="btn" onClick={openCreate}>
-          Yeni Kayit
-        </button>
-      </div>
-    );
-  }, []);
 
   return (
     <div className="app-shell">
@@ -103,12 +91,10 @@ export default function DashboardPage() {
           <CalculatePanel onDone={refresh} onCalculate={onCalculate} />
         </div>
 
-        <Toolbar onRefresh={refresh} />
+        <Toolbar onRefresh={refresh} onCreate={openCreate} />
 
         {error && <div className="alert alert-error">{error}</div>}
         {loading && <div className="alert">Loading...</div>}
-
-        {topActions}
 
         <RecordsTable rows={rows} onEdit={openEdit} />
 

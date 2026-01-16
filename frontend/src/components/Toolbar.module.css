@@ -21,3 +21,24 @@
   color:white;
   cursor:pointer;
 }
+
+.left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  justify-content:flex-end;
+}
+
+.bar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-top: 12px;
+}
