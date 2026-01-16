@@ -47,7 +47,28 @@ def records_to_excel(records: List[Record]) -> BytesIO:
     for r in records:
         row = dict(r.raw_row or {})
 
-        # DB field -> export kolon isimleri
+        # raw_row'da yoksa DB field'lardan doldur
+        row.setdefault("Campaign name", r.campaign_name)
+        row.setdefault("Labels on Campaign", r.label)
+
+        row.setdefault("Camp. budget", r.camp_budget)
+        row.setdefault("Camp. cost", r.camp_cost)
+        row.setdefault("Camp. 3D cost", r.camp_3d_cost)
+        row.setdefault("Camp. conv.", r.camp_conv)
+        row.setdefault("Camp. CPA", r.camp_cpa)
+        row.setdefault("Camp. tCPA", r.camp_tcpa)
+
+        row.setdefault("MTD Cluster Spend", r.mtd_cluster_spend)
+
+        row.setdefault("Label budget", r.label_budget)
+        row.setdefault("Label cost", r.label_cost)
+        row.setdefault("Label 3D cost", r.label_3d_cost)
+        row.setdefault("Label conv.", r.label_conv)
+        row.setdefault("Label remaining budget", r.label_remaining_budget)
+        row.setdefault("Label KPI value", r.label_kpi_value)
+        row.setdefault("Label CPA", r.label_cpa)
+
+        # Hesaplanan kolonlar
         row["New Daily budget"] = r.new_daily_budget
         row["New target CPA"] = r.new_target_cpa
 

@@ -6,6 +6,58 @@ from app.core.db import get_db
 from app.models.record import Record
 from app.schemas.record import RecordCreate, RecordUpdate
 
+# Excel export için beklenen kolon isimleri (upload'dakiyle uyumlu)
+DEFAULT_SOURCE_HEADERS = [
+    "Campaign name",
+    "Labels on Campaign",
+    "Camp. budget",
+    "Camp. cost",
+    "Camp. 3D cost",
+    "Camp. conv.",
+    "Camp. CPA",
+    "Camp. tCPA",
+    "MTD Cluster Spend",
+    "Label budget",
+    "Label cost",
+    "Label 3D cost",
+    "Label conv.",
+    "Label remaining budget",
+    "Label KPI value",
+    "Label CPA",
+]
+
+def _sync_raw_row_from_fields(rec: Record):
+    """
+    Manuel eklenen/güncellenen kaydı, excel export'un kullandığı raw_row formatına yazar.
+    """
+    row = dict(rec.raw_row or {})
+
+    row["Campaign name"] = rec.campaign_name
+    row["Labels on Campaign"] = rec.label
+
+    row["Camp. budget"] = rec.camp_budget
+    row["Camp. cost"] = rec.camp_cost
+    row["Camp. 3D cost"] = rec.camp_3d_cost
+    row["Camp. conv."] = rec.camp_conv
+    row["Camp. CPA"] = rec.camp_cpa
+    row["Camp. tCPA"] = rec.camp_tcpa
+
+    row["MTD Cluster Spend"] = rec.mtd_cluster_spend
+
+    row["Label budget"] = rec.label_budget
+    row["Label cost"] = rec.label_cost
+    row["Label 3D cost"] = rec.label_3d_cost
+    row["Label conv."] = rec.label_conv
+    row["Label remaining budget"] = rec.label_remaining_budget
+    row["Label KPI value"] = rec.label_kpi_value
+    row["Label CPA"] = rec.label_cpa
+
+    rec.raw_row = row
+
+    if not rec.source_headers:
+        rec.source_headers = list(DEFAULT_SOURCE_HEADERS)
+
+
 router = APIRouter(prefix="/api/records", tags=["records"])
 
 
@@ -64,6 +116,8 @@ def create_or_update_record(payload: RecordCreate, db: Session = Depends(get_db)
         for k, v in data.items():
             setattr(existing, k, v)
 
+        _sync_raw_row_from_fields(existing)
+
         try:
             db.commit()
         except IntegrityError:
@@ -99,6 +153,8 @@ def update_record(record_id: int, payload: RecordUpdate, db: Session = Depends(g
     updates = payload.model_dump(exclude_unset=True)
     for key, value in updates.items():
         setattr(record, key, value)
+
+    _sync_raw_row_from_fields(record)
 
     try:
         db.commit()
