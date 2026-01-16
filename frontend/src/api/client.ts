@@ -2,59 +2,53 @@
 import axios from "axios";
 import type { RecordItem } from "../types/record";
 
-import {
-  fetchRecords,
-  runCalculate,
-  createOrUpdateRecord,
-  patchRecord,
-  deleteRecord,
-  uploadExcel,
-  downloadExportExcel,
-  pingHealth,
-} from "./endpoints";
+const RAW = import.meta.env.VITE_API_BASE_URL ?? "";
+const ORIGIN = RAW.replace(/\/+$/, ""); // sondaki / temizle
 
-const BASE = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
-
-// API instance
 export const api = axios.create({
-  baseURL: BASE ? `${BASE}/api` : "/api",
+  // Prod: https://...onrender.com/api
+  // Dev: /api (vite proxy)
+  baseURL: ORIGIN ? `${ORIGIN}/api` : "/api",
   timeout: 30000,
 });
 
-// ===== Dashboard uyumlu helper'lar (tek tip: ham data dondur) =====
-
-export async function apiPingHealth() {
-  return pingHealth();
-}
-
+// DashboardPage uyumlu helper'lar (tek tip)
 export async function apiGetRecords() {
-  const res = await fetchRecords();
-  // backend: { success, count, data: RecordItem[] }
-  return res.data; // RecordItem[]
+  // returns: { success, count, data }
+  const res = await api.get<{ success: boolean; count: number; data: RecordItem[] }>("/records/");
+  return res.data;
 }
 
 export async function apiCalculate() {
-  return runCalculate();
+  const res = await api.post("/calculate/");
+  return res.data;
 }
 
-export async function apiUploadExcel(file: File) {
-  return uploadExcel(file);
-}
-
-export async function apiCreateRecord(
-  payload: { label: string; campaign_name: string } & Partial<RecordItem>
-) {
-  return createOrUpdateRecord(payload);
+export async function apiCreateRecord(payload: { label: string; campaign_name: string } & Partial<RecordItem>) {
+  const res = await api.post("/records/", payload);
+  return res.data;
 }
 
 export async function apiPatchRecord(id: number, payload: Partial<RecordItem>) {
-  return patchRecord(id, payload);
+  const res = await api.patch(`/records/${id}`, payload);
+  return res.data;
 }
 
 export async function apiDeleteRecord(id: number) {
-  return deleteRecord(id);
+  const res = await api.delete(`/records/${id}`);
+  return res.data;
+}
+
+export async function apiUploadExcel(file: File) {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await api.post("/excel/upload", fd, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
 }
 
 export async function apiDownloadExportExcel() {
-  return downloadExportExcel();
+  const res = await api.get("/export/excel", { responseType: "blob" });
+  return res.data as Blob;
 }

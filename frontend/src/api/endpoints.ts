@@ -3,6 +3,7 @@ import { api } from "./client";
 import type { RecordItem } from "../types/record";
 
 export function pingHealth() {
+  // health /api altında değilse bunu kullanma; backendine göre ayarla
   return api.get<{ ok: boolean }>("/health");
 }
 
@@ -18,18 +19,16 @@ export function uploadExcel(file: File) {
   });
 }
 
-export function createOrUpdateRecord(
-  payload: Partial<RecordItem> & { label: string; campaign_name: string }
-) {
-  return api.post<{ success: boolean; created?: boolean; id: number }>("/records/", payload);
+export function createOrUpdateRecord(payload: Partial<RecordItem> & { label: string; campaign_name: string }) {
+  return api.post("/records/", payload);
 }
 
 export function patchRecord(id: number, payload: Partial<RecordItem>) {
-  return api.patch<{ success: boolean }>(`/records/${id}`, payload);
+  return api.patch(`/records/${id}`, payload);
 }
 
 export function deleteRecord(id: number) {
-  return api.delete<{ success: boolean }>(`/records/${id}`);
+  return api.delete(`/records/${id}`);
 }
 
 export function runCalculate() {

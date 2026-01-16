@@ -21,7 +21,6 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [editing, setEditing] = useState<RecordRow | null>(null);
@@ -30,9 +29,8 @@ export default function DashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      // apiGetRecords -> RecordRow[] (array) donuyor olmalı
-      const data = await apiGetRecords();
-      setRows(data);
+      const res = await apiGetRecords();   // { success, count, data }
+      setRows(res.data as RecordRow[]);    // tabloya sadece array bas
     } catch (e: any) {
       setError(e?.message || "Load failed");
     } finally {
@@ -80,10 +78,8 @@ export default function DashboardPage() {
         await apiPatchRecord(editing.id, payload);
       }
 
-      // Yeni kayıt/editlemeden sonra otomatik hesapla + tabloyu yenile
       await apiCalculate();
       await refresh();
-
       setModalOpen(false);
     } catch (e: any) {
       setError(e?.message || "Save failed");
