@@ -10,18 +10,19 @@ import {
   deleteRecord,
 } from "./endpoints";
 
-// Render backend base url (ör: https://ad-campaign-management.onrender.com)
-// Eğer yoksa boş kalır ve baseURL "/api" olur (local/proxy için)
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+// Vercel env: VITE_API_BASE_URL="https://ad-campaign-management.onrender.com"
+// Local dev: env yoksa Vite proxy ile "/api" çalışır.
+const BASE = import.meta.env.VITE_API_BASE_URL as string | undefined;
 
 export const api = axios.create({
-  baseURL: BASE_URL + "/api",
+  baseURL: BASE ? `${BASE.replace(/\/$/, "")}/api` : "/api",
   timeout: 30000,
 });
 
 // DashboardPage uyumlu helper'lar
 export async function apiGetRecords() {
-  return fetchRecords();
+  const res = await fetchRecords();
+  return res.data; // { success, count, data }
 }
 
 export async function apiCalculate() {
