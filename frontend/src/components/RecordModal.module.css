@@ -10,7 +10,7 @@
 
 .modal {
   width: 100%;
-  max-width: 720px;
+  max-width: 920px;
   border-radius: 22px;
   background: rgba(10,12,20,0.92);
   border: 1px solid rgba(255,255,255,0.10);
@@ -32,12 +32,21 @@
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 10px;
 }
 
 @media (max-width: 720px) {
   .grid { grid-template-columns: 1fr; }
+}
+
+.section {
+  grid-column: 1 / -1;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.10);
+  font-weight: 700;
+  opacity: 0.9;
 }
 
 .field label {
