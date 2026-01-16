@@ -67,13 +67,15 @@ export default function DashboardPage() {
     setError(null);
     try {
       if (modalMode === "create") {
-        await apiCreateRecord(payload);
-      } else {
-        const id = Number(payload.id);
-        const { id: _id, ...patch } = payload;
-        await apiPatchRecord(id, patch);
-      }
-      await refresh();
+      await apiCreateRecord(payload);
+    } else {
+      await apiPatchRecord(id, patch);
+    }
+
+    // Yeni kayıt/editlemeden sonra otomatik hesapla
+    await apiCalculate();
+    await refresh();
+
     } catch (e: any) {
       setError(e?.message || "Save failed");
     } finally {
