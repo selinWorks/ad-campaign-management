@@ -20,18 +20,19 @@ export default function DashboardPage() {
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [editing, setEditing] = useState<RecordRow | null>(null);
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await apiGetRecords();
-      setRows(data);
-    } catch (e: any) {
-      setError(e?.message || "Load failed");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+ const refresh = useCallback(async () => {
+  setLoading(true);
+  setError(null);
+  try {
+    const res = await apiGetRecords();
+    // res: { success: boolean; count: number; data: RecordRow[] }
+    setRows(res.data);
+  } catch (e: any) {
+    setError(e?.message || "Load failed");
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
   useEffect(() => {
     refresh();
