@@ -25,13 +25,12 @@ export default function DashboardPage() {
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [editing, setEditing] = useState<RecordRow | null>(null);
 
-
   const refresh = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const res = await apiGetRecords();   // { success, count, data }
-      setRows(res.data as RecordRow[]);
+      setRows(res.data as RecordRow[]);    // tabloya sadece array bas
     } catch (e: any) {
       setError(e?.message || "Load failed");
     } finally {
@@ -111,17 +110,6 @@ export default function DashboardPage() {
     <div className="app-shell">
       <div className="container">
         <Navbar />
-        <div className="statsBar">
-  <div className="chipGlow">
-    <span className="chipDot" />
-    {rows.length} records
-  </div>
-  <div className="chipGlow chipGlow2">
-    <span className="chipDot" />
-    {Array.from(new Set(rows.map((r) => r.platform).filter(Boolean))).length} platforms
-  </div>
-</div>
-
 
         <div className="grid-2">
           <UploadBox onUploaded={refresh} />

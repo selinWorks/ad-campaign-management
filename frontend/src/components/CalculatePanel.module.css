@@ -1,3 +1,4 @@
+
 .card{
   padding: 18px;
   border-radius: 18px;
@@ -8,84 +9,14 @@
 }
 .title{ font-weight:700; }
 .sub{ opacity:0.65; font-size:12px; margin-top:6px; }
-
 .btn{
   margin-top:18px;
   width: 100%;
-  padding: 14px 16px;
-  border-radius: 18px;
-
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(120,180,255,0.25);
+  background: rgba(120,180,255,0.12);
+  color: white;
   cursor: pointer;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-
-  border: 1px solid rgba(120,180,255,0.30);
-  color: #EAF0FF;
-
-  background: linear-gradient(
-    135deg,
-    rgba(120,180,255,0.20),
-    rgba(160,120,255,0.16)
-  );
-
-  box-shadow:
-    0 0 0 1px rgba(120,180,255,0.06),
-    0 18px 55px rgba(120,180,255,0.10);
-
-  position: relative;
-  overflow: hidden;
-
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, filter .18s ease;
-}
-
-/* Hover: yukarı kalksın + glow artsın */
-.btn:hover{
-  transform: translateY(-2px) scale(1.01);
-  border-color: rgba(120,180,255,0.55);
-
-  box-shadow:
-    0 0 0 1px rgba(120,180,255,0.12),
-    0 0 30px rgba(120,180,255,0.18),
-    0 0 70px rgba(160,120,255,0.10);
-}
-
-/* Click: basma efekti */
-.btn:active{
-  transform: translateY(0px) scale(0.99);
-  filter: brightness(1.02);
-}
-
-/* Shimmer (ışık kayması) */
-.btn::before{
-  content:"";
-  position:absolute;
-  inset:-2px;
-  background: linear-gradient(
-    120deg,
-    transparent 0%,
-    rgba(255,255,255,0.08) 35%,
-    rgba(255,255,255,0.22) 50%,
-    rgba(255,255,255,0.08) 65%,
-    transparent 100%
-  );
-  transform: translateX(-120%);
-  transition: transform .6s ease;
-  pointer-events:none;
-}
-
-.btn:hover::before{
-  transform: translateX(120%);
-}
-
-/* Sağ üstte minik neon halo */
-.btn::after{
-  content:"";
-  position:absolute;
-  width: 160px;
-  height: 160px;
-  right: -80px;
-  top: -80px;
-  background: radial-gradient(circle, rgba(120,180,255,0.22), transparent 60%);
-  opacity: 0.8;
-  pointer-events:none;
+  box-shadow: 0 0 30px rgba(120,180,255,0.10);
 }

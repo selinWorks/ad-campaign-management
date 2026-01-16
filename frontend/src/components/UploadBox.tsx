@@ -1,3 +1,5 @@
+
+// --- src/components/UploadBox.tsx ---
 import { useRef, useState } from "react";
 import styles from "./UploadBox.module.css";
 import { apiUploadExcel } from "../api/client";
@@ -9,27 +11,20 @@ export default function UploadBox({ onUploaded }: { onUploaded?: () => void }) {
 
   async function upload(file: File) {
     setLoading(true);
-    setMsg("Yükleniyor... (Backend uyanıyor olabilir, biraz sürebilir)");
+    setMsg(null);
 
     try {
       const data = await apiUploadExcel(file);
       setMsg(`Yüklendi: ${data.filename} — ${data.row_count} satır`);
       onUploaded?.();
     } catch (e: any) {
+      // axios error
       const detail = e?.response?.data?.detail;
       const text =
         (typeof detail === "string" ? detail : detail?.message) ||
         e?.message ||
         "Upload error";
-
-      // axios timeout özel mesaj
-      if (String(text).includes("timeout")) {
-        setMsg(
-          "Hata: Upload çok uzun sürdü (timeout). Render backend uykudan uyanıyor olabilir. 1 kez daha dene."
-        );
-      } else {
-        setMsg(`Hata: ${text}`);
-      }
+      setMsg(`Hata: ${text}`);
     } finally {
       setLoading(false);
     }
@@ -73,7 +68,6 @@ export default function UploadBox({ onUploaded }: { onUploaded?: () => void }) {
         />
       </div>
 
-      {loading && <div className={styles.loader} />}
       {msg && <div className={styles.msg}>{msg}</div>}
     </div>
   );
