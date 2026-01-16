@@ -2,13 +2,17 @@ import styles from "./Toolbar.module.css";
 
 type Props = {
   onRefresh: () => void;
-  onCreate?: () => void; // <-- eklendi
+  onCreate?: () => void;
 };
 
 export default function Toolbar({ onRefresh, onCreate }: Props) {
   function exportExcel() {
-    // backend streaming endpoint
-    window.location.href = "/api/export/excel";
+    // PROD: VITE_API_BASE_URL = https://ad-campaign-management.onrender.com
+    // LOCAL: boşsa vite proxy ile /api çalışır
+    const base = import.meta.env.VITE_API_BASE_URL || "";
+    const url = base ? `${base}/api/export/excel` : `/api/export/excel`;
+
+    window.location.href = url;
   }
 
   return (
