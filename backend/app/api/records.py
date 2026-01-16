@@ -111,6 +111,16 @@ def update_record(record_id: int, payload: RecordUpdate, db: Session = Depends(g
 
     return {"success": True, "id": record.id}
 
+@router.delete("/{record_id}")
+def delete_record(record_id: int, db: Session = Depends(get_db)):
+    record = db.query(Record).filter(Record.id == record_id).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    db.delete(record)
+    db.commit()
+    return {"success": True, "id": record_id}
+
 
 @router.get("/ping")
 def ping():

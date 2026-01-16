@@ -33,6 +33,12 @@ export async function patchRecord(id: number, payload: Partial<RecordItem>) {
   return res.data as { success: boolean };
 }
 
+export async function deleteRecord(id: number) {
+  const res = await api.delete(`/records/${id}`);
+  return res.data as { success: boolean };
+}
+
+
 export async function runCalculate() {
   const res = await api.post("/calculate/");
   return res.data;

@@ -80,8 +80,21 @@ tr:hover td{
 }
 
 .actions{
-  width: 130px;
+  width: 190px;
   white-space: nowrap;
+}
+
+.actions .btn{
+  margin-right: 8px;
+}
+
+.btnDanger{
+  border: 1px solid rgba(255,80,80,0.35);
+  background: rgba(255,80,80,0.10);
+}
+
+.btnDanger:hover{
+  background: rgba(255,80,80,0.16);
 }
 
 .btn{

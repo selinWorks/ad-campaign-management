@@ -5,9 +5,10 @@ import styles from "./RecordsTable.module.css";
 type Props = {
   rows: RecordRow[];
   onEdit: (row: RecordRow) => void;
+  onDelete: (row: RecordRow) => void;
 };
 
-export default function RecordsTable({ rows, onEdit }: Props) {
+export default function RecordsTable({ rows, onEdit, onDelete }: Props) {
   const [pageSize, setPageSize] = useState<number>(15);
   const [page, setPage] = useState<number>(1);
 
@@ -90,6 +91,12 @@ export default function RecordsTable({ rows, onEdit }: Props) {
                 <td className={styles.actions}>
                   <button className={styles.btn} onClick={() => onEdit(r)}>
                     Düzenle
+                  </button>
+                  <button
+                      className={`${styles.btn} ${styles.btnDanger}`}
+                      onClick={() => onDelete(r)}
+                  >
+                      Sil
                   </button>
                 </td>
               </tr>
