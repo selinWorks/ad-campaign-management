@@ -1,5 +1,7 @@
+// --- src/components/UploadBox.tsx ---
 import { useRef, useState } from "react";
 import styles from "./UploadBox.module.css";
+import { apiUploadExcel } from "../api/client";
 
 export default function UploadBox({ onUploaded }: { onUploaded?: () => void }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -11,17 +13,17 @@ export default function UploadBox({ onUploaded }: { onUploaded?: () => void }) {
     setMsg(null);
 
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-
-      const res = await fetch("/api/excel/upload", { method: "POST", body: fd });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.detail?.message || data?.detail || "Upload failed");
-
+      const data = await apiUploadExcel(file);
       setMsg(`Yüklendi: ${data.filename} — ${data.row_count} satır`);
       onUploaded?.();
     } catch (e: any) {
-      setMsg(`Hata: ${e.message || "Upload error"}`);
+      // axios error
+      const detail = e?.response?.data?.detail;
+      const text =
+        (typeof detail === "string" ? detail : detail?.message) ||
+        e?.message ||
+        "Upload error";
+      setMsg(`Hata: ${text}`);
     } finally {
       setLoading(false);
     }
@@ -56,7 +58,13 @@ export default function UploadBox({ onUploaded }: { onUploaded?: () => void }) {
           {loading ? "Yükleniyor..." : "Dosya Seç"}
         </button>
 
-        <input ref={inputRef} type="file" accept=".xlsx" style={{ display: "none" }} onChange={onChange} />
+        <input
+          ref={inputRef}
+          type="file"
+          accept=".xlsx"
+          style={{ display: "none" }}
+          onChange={onChange}
+        />
       </div>
 
       {msg && <div className={styles.msg}>{msg}</div>}
