@@ -1,50 +1,41 @@
-// --- src/api/endpoint.ts ---
+// --- src/api/endpoints.ts ---
 import { api } from "./client";
 import type { RecordItem } from "../types/record";
 
-export async function pingHealth() {
-  const res = await api.get("/health");
-  return res.data as { ok: boolean };
+export function pingHealth() {
+  return api.get<{ ok: boolean }>("/health");
 }
 
-export async function fetchRecords() {
-  const res = await api.get("/records/");
-  return res.data as { success: boolean; count: number; data: RecordItem[] };
+export function fetchRecords() {
+  return api.get<{ success: boolean; count: number; data: RecordItem[] }>("/records/");
 }
 
-export async function uploadExcel(file: File) {
+export function uploadExcel(file: File) {
   const fd = new FormData();
   fd.append("file", file);
-  const res = await api.post("/excel/upload", fd, {
+  return api.post("/excel/upload", fd, {
     headers: { "Content-Type": "multipart/form-data" },
   });
-  return res.data;
 }
 
-export async function createOrUpdateRecord(
+export function createOrUpdateRecord(
   payload: Partial<RecordItem> & { label: string; campaign_name: string }
 ) {
-  const res = await api.post("/records/", payload);
-  return res.data as { success: boolean; created?: boolean; id: number };
+  return api.post<{ success: boolean; created?: boolean; id: number }>("/records/", payload);
 }
 
-export async function patchRecord(id: number, payload: Partial<RecordItem>) {
-  const res = await api.patch(`/records/${id}`, payload);
-  return res.data as { success: boolean };
+export function patchRecord(id: number, payload: Partial<RecordItem>) {
+  return api.patch<{ success: boolean }>(`/records/${id}`, payload);
 }
 
-export async function deleteRecord(id: number) {
-  const res = await api.delete(`/records/${id}`);
-  return res.data as { success: boolean };
+export function deleteRecord(id: number) {
+  return api.delete<{ success: boolean }>(`/records/${id}`);
 }
 
-
-export async function runCalculate() {
-  const res = await api.post("/calculate/");
-  return res.data;
+export function runCalculate() {
+  return api.post("/calculate/");
 }
 
-export async function downloadExportExcel() {
-  const res = await api.get("/export/excel", { responseType: "blob" });
-  return res.data as Blob;
+export function downloadExportExcel() {
+  return api.get("/export/excel", { responseType: "blob" });
 }

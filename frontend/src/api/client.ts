@@ -8,25 +8,37 @@ import {
   createOrUpdateRecord,
   patchRecord,
   deleteRecord,
+  uploadExcel,
+  downloadExportExcel,
+  pingHealth,
 } from "./endpoints";
 
-// Vercel env: VITE_API_BASE_URL="https://ad-campaign-management.onrender.com"
-// Local dev: env yoksa Vite proxy ile "/api" çalışır.
-const BASE = import.meta.env.VITE_API_BASE_URL as string | undefined;
+const BASE = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
 
+// API instance
 export const api = axios.create({
-  baseURL: BASE ? `${BASE.replace(/\/$/, "")}/api` : "/api",
+  baseURL: BASE ? `${BASE}/api` : "/api",
   timeout: 30000,
 });
 
-// DashboardPage uyumlu helper'lar
+// ===== Dashboard uyumlu helper'lar (tek tip: ham data dondur) =====
+
+export async function apiPingHealth() {
+  return pingHealth();
+}
+
 export async function apiGetRecords() {
   const res = await fetchRecords();
-  return res.data; // { success, count, data }
+  // backend: { success, count, data: RecordItem[] }
+  return res.data; // RecordItem[]
 }
 
 export async function apiCalculate() {
   return runCalculate();
+}
+
+export async function apiUploadExcel(file: File) {
+  return uploadExcel(file);
 }
 
 export async function apiCreateRecord(
@@ -41,4 +53,8 @@ export async function apiPatchRecord(id: number, payload: Partial<RecordItem>) {
 
 export async function apiDeleteRecord(id: number) {
   return deleteRecord(id);
+}
+
+export async function apiDownloadExportExcel() {
+  return downloadExportExcel();
 }
