@@ -8,7 +8,7 @@ import Toolbar from "../components/Toolbar";
 import RecordModal from "../components/RecordModal";
 
 import type { RecordRow } from "../types/record";
-import { apiCalculate, apiGetRecords, apiCreateRecord, apiPatchRecord } from "../api/client";
+import { apiCalculate, apiGetRecords, apiCreateRecord, apiPatchRecord, apiDeleteRecord } from "../api/client";
 
 export default function DashboardPage() {
   const [rows, setRows] = useState<RecordRow[]>([]);
@@ -81,6 +81,23 @@ export default function DashboardPage() {
     }
   }
 
+  async function handleDelete(row: RecordRow) {
+    const ok = window.confirm(
+      `Bu kaydı silmek istiyor musunuz?\n\nLabel: ${row.label}\nCampaign: ${row.campaign_name}`
+    );
+    if (!ok) return;
+
+    setLoading(true);
+    setError(null);
+    try {
+      await apiDeleteRecord(row.id);
+      await refresh(); // tabloyu DB’den tekrar çek
+    } catch (e: any) {
+      setError(e?.message || "Delete failed");
+    } finally {
+      setLoading(false);
+    }
+  }
   return (
     <div className="app-shell">
       <div className="container">
@@ -96,7 +113,7 @@ export default function DashboardPage() {
         {error && <div className="alert alert-error">{error}</div>}
         {loading && <div className="alert">Loading...</div>}
 
-        <RecordsTable rows={rows} onEdit={openEdit} />
+        <RecordsTable rows={rows} onEdit={openEdit} onDelete={handleDelete} />
 
         <RecordModal
           open={modalOpen}
