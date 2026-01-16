@@ -63,25 +63,25 @@ export default function DashboardPage() {
   }
 
   async function handleModalSubmit(payload: any) {
-    setLoading(true);
-    setError(null);
-    try {
-      if (modalMode === "create") {
+  setLoading(true);
+  setError(null);
+  try {
+    if (modalMode === "create") {
       await apiCreateRecord(payload);
     } else {
-      await apiPatchRecord(id, patch);
+      if (!editing) throw new Error("Edit kaydı bulunamadı (editing null).");
+      await apiPatchRecord(editing.id, payload);
     }
 
     // Yeni kayıt/editlemeden sonra otomatik hesapla
     await apiCalculate();
     await refresh();
-
-    } catch (e: any) {
-      setError(e?.message || "Save failed");
-    } finally {
-      setLoading(false);
-    }
+  } catch (e: any) {
+    setError(e?.message || "Save failed");
+  } finally {
+    setLoading(false);
   }
+}
 
   async function handleDelete(row: RecordRow) {
     const ok = window.confirm(
